@@ -1,0 +1,35 @@
+{
+  "name": "@shieldlabs/vue",
+  "version": "0.0.0",
+  "description": "Vue bindings for the ShieldLabs browser loader.",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": ["dist", "README.md", "LICENSE"],
+  "sideEffects": false,
+  "scripts": {
+    "build": "tsup src/index.ts --format esm,cjs --dts --clean",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": ["shieldlabs", "vue", "device-intelligence", "visitor-identification", "risk-score"],
+  "repository": { "type": "git", "url": "git+https://github.com/ShieldLabs-ai/shieldlabs-vue.git" },
+  "homepage": "https://shieldlabs.ai",
+  "bugs": { "url": "https://github.com/ShieldLabs-ai/shieldlabs-vue/issues" },
+  "license": "MIT",
+  "publishConfig": { "access": "public" },
+  "peerDependencies": { "vue": ">=3" },
+  "dependencies": { "@shieldlabs/js": "workspace:*" },
+  "devDependencies": {
+    "vue": "^3.4.0",
+    "tsup": "^8.0.0",
+    "typescript": "^5.4.0"
+  }
+}
