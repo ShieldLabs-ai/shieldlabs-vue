@@ -1,14 +1,25 @@
-/**
- * @shieldlabs/vue — thin Vue wrapper over @shieldlabs/js.
- * No signal-collection logic lives here.
- *
- * Status: pre-launch scaffold. Composable surface is a placeholder.
- */
-import type { IdentificationResult, ShieldLabsOptions } from "@shieldlabs/js";
+export { createShieldLabs } from './plugin';
+export { useIdentify, useShieldLabs } from './composables';
+export { shieldLabsKey } from './context';
+export { VERSION } from './version';
+export type {
+  CheckOnLoadOption,
+  ShieldLabsContext,
+  ShieldLabsOptions,
+  ShieldLabsPlugin,
+  ShieldLabsStatus,
+  UseIdentifyOptions,
+  UseIdentifyReturn,
+  UseShieldLabsReturn,
+} from './types';
 
-export type { IdentificationResult, ShieldLabsOptions };
-
-/** Placeholder composable. Not implemented yet. */
-export function useShieldLabs(_options: ShieldLabsOptions) {
-  return { data: undefined, error: new Error("@shieldlabs/vue is not published yet."), isLoading: false };
-}
+// Re-exported from @shieldlabs-ai/js so that apps can import everything from @shieldlabs-ai/vue.
+export { ShieldLabsError } from '@shieldlabs-ai/js';
+export type {
+  IdentifyOptions,
+  IdentifyResult,
+  InteractionIdentifier,
+  LoadOptions,
+  ShieldLabsAgent,
+  ShieldLabsErrorCode,
+} from '@shieldlabs-ai/js';
