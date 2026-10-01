@@ -1,0 +1,70 @@
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: read
+
+# Two jobs: `build` tests and packs the package without write permissions, `publish` publishes that
+# exact tarball. Re-running the workflow is safe: a version that is already on npm is skipped.
+# Actions are pinned to full commit SHAs; the comment names the release.
+
+jobs:
+  build:
+    name: Test and pack
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+        with:
+          node-version: 22
+          cache: npm
+      - name: Check that the tag matches package.json
+        run: test "v$(node -p "require('./package.json').version")" = "$GITHUB_REF_NAME"
+      - run: npm ci
+      # Fails when @shieldlabs-ai/js is not published yet: publish it first.
+      - name: Install the published @shieldlabs-ai/js
+        run: npm install --no-save "@shieldlabs-ai/js@$(node -p "require('./package.json').peerDependencies['@shieldlabs-ai/js']")"
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm test -- --coverage
+      - run: npm run build
+      - run: npm pack
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: package
+          path: shieldlabs-ai-vue-*.tgz
+          if-no-files-found: error
+
+  publish:
+    name: Publish to npm
+    needs: build
+    runs-on: ubuntu-latest
+    # Add required reviewers to this environment (Settings > Environments) to approve each release.
+    environment: npm
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+        with:
+          node-version: 22
+          registry-url: https://registry.npmjs.org
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: package
+      - name: Publish, unless this version is already on npm
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          published="$(npm view "@shieldlabs-ai/vue@$version" version 2>/dev/null || true)"
+          if [ "$published" = "$version" ]; then
+            echo "@shieldlabs-ai/vue@$version is already on npm: nothing to publish."
+          else
+            npm publish "./shieldlabs-ai-vue-$version.tgz" --provenance --access public
+          fi
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

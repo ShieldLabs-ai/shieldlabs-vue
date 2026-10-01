@@ -1,11 +1,22 @@
+# Dependencies and build output
 node_modules/
 dist/
-build/
-*.log
+coverage/
 *.tgz
+*.log
+
+# Framework caches (examples)
+.nuxt/
+.output/
+.vite/
+
+# Local environment
 .env
 .env.*
+!.env.example
+
+# Editors and OS
 .DS_Store
-coverage/
-.turbo/
-.history
+.history/
+.idea/
+.vscode/

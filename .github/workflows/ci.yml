@@ -1,0 +1,95 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+# @shieldlabs-ai/js (a peer dependency) is not on npm yet: every job builds it from the main branch of
+# ShieldLabs-ai/shieldlabs-js and installs the tarball without saving it (see CONTRIBUTING.md).
+# Actions are pinned to full commit SHAs; the comment names the release.
+
+jobs:
+  test:
+    name: Test (Node ${{ matrix.node-version }}, Vue ${{ matrix.vue }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: [20, 22, 24]
+        vue: [lockfile]
+        include:
+          - node-version: 22
+            vue: '3.3'
+    defaults:
+      run:
+        working-directory: shieldlabs-vue
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        with:
+          path: shieldlabs-vue
+          persist-credentials: false
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        with:
+          repository: ShieldLabs-ai/shieldlabs-js
+          ref: main
+          path: shieldlabs-js
+          persist-credentials: false
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: npm
+          cache-dependency-path: |
+            shieldlabs-vue/package-lock.json
+            shieldlabs-js/package-lock.json
+      - name: Build @shieldlabs-ai/js
+        working-directory: shieldlabs-js
+        run: npm ci && npm run build && npm pack
+      - run: npm ci
+      - run: npm install --no-save ../shieldlabs-js/shieldlabs-ai-js-*.tgz
+      - name: Use Vue 3.3 (lowest supported version)
+        if: matrix.vue == '3.3'
+        run: npm install --no-save vue@~3.3.0 ../shieldlabs-js/shieldlabs-ai-js-*.tgz
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm test -- --coverage
+      - run: npm run build
+
+  example-vite:
+    name: Vite example
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: shieldlabs-vue
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        with:
+          path: shieldlabs-vue
+          persist-credentials: false
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        with:
+          repository: ShieldLabs-ai/shieldlabs-js
+          ref: main
+          path: shieldlabs-js
+          persist-credentials: false
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            shieldlabs-vue/package-lock.json
+            shieldlabs-js/package-lock.json
+      - name: Build @shieldlabs-ai/js
+        working-directory: shieldlabs-js
+        run: npm ci && npm run build && npm pack
+      - run: npm ci
+      - run: npm install --no-save ../shieldlabs-js/shieldlabs-ai-js-*.tgz
+      - run: npm run build && npm pack
+      - name: Build examples/vite against the packed packages
+        working-directory: shieldlabs-vue/examples/vite
+        run: |
+          npm install --no-save --no-package-lock ../../shieldlabs-ai-vue-*.tgz ../../../shieldlabs-js/shieldlabs-ai-js-*.tgz
+          npm run build
