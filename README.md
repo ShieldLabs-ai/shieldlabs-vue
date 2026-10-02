@@ -571,16 +571,19 @@ More detail: [`@shieldlabs-ai/js` Errors](https://github.com/ShieldLabs-ai/shiel
 
 ## Development
 
+From the repository root, install the development tools and the published loader. No sibling
+repository is required. Repeat the loader install after each `npm ci`.
+
 ```bash
 npm ci
-npm install --no-save ../shieldlabs-js/shieldlabs-ai-js-1.0.0.tgz   # until @shieldlabs-ai/js is on npm
+npm install --no-save --legacy-peer-deps=false '@shieldlabs-ai/js@^1.0.0'
 npm run typecheck
 npm run lint
 npm test -- --coverage   # builds first, then runs the tests
 npm run build
 ```
 
-See [CONTRIBUTING.md](./CONTRIBUTING.md) for building the `@shieldlabs-ai/js` tarball. Documentation:
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for setup details and testing local changes. Documentation:
 <https://docs.shieldlabs.ai>. Analytics dashboard: <https://app.shieldlabs.ai>. Support:
 <contact@shieldlabs.ai>.
 

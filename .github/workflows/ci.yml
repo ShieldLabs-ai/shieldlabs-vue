@@ -8,8 +8,8 @@ on:
 permissions:
   contents: read
 
-# @shieldlabs-ai/js (a peer dependency) is not on npm yet: every job builds it from the main branch of
-# ShieldLabs-ai/shieldlabs-js and installs the tarball without saving it (see CONTRIBUTING.md).
+# Every job builds @shieldlabs-ai/js from the main branch of ShieldLabs-ai/shieldlabs-js and installs
+# the tarball without saving it. Local setup can use the published loader (see CONTRIBUTING.md).
 # Actions are pinned to full commit SHAs; the comment names the release.
 
 jobs:

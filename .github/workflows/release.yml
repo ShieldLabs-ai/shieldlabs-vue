@@ -26,7 +26,7 @@ jobs:
       - name: Check that the tag matches package.json
         run: test "v$(node -p "require('./package.json').version")" = "$GITHUB_REF_NAME"
       - run: npm ci
-      # Fails when @shieldlabs-ai/js is not published yet: publish it first.
+      # Install a published loader version matching this package's peer dependency range.
       - name: Install the published @shieldlabs-ai/js
         run: npm install --no-save "@shieldlabs-ai/js@$(node -p "require('./package.json').peerDependencies['@shieldlabs-ai/js']")"
       - run: npm run typecheck

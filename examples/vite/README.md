@@ -6,6 +6,8 @@ A signup form in Vue 3. `src/main.ts` installs the plugin from `createShieldLabs
 
 ## Run it
 
+From this example directory, install the published packages from npm:
+
 ```bash
 npm install
 cp .env.example .env   # then set VITE_SHIELDLABS_PUBLIC_KEY
@@ -25,15 +27,19 @@ development domain to see results in the [analytics dashboard](https://app.shiel
 
 ## Build against local copies of the packages
 
-Before `@shieldlabs-ai/vue` and `@shieldlabs-ai/js` are on npm, with a checkout of `shieldlabs-js` next
-to this repository:
+Use the published loader and a tarball of this checkout to test changes to the Vue binding:
 
 ```bash
-# in shieldlabs-js
-npm ci && npm run build && npm pack
 # in the root of this repository
-npm ci && npm install --no-save ../shieldlabs-js/shieldlabs-ai-js-1.0.0.tgz && npm run build && npm pack
+npm ci
+npm install --no-save --legacy-peer-deps=false '@shieldlabs-ai/js@^1.0.0'
+npm run build && npm pack
 cd examples/vite
-npm install --no-save --no-package-lock ../../shieldlabs-ai-vue-1.0.0.tgz ../../../shieldlabs-js/shieldlabs-ai-js-1.0.0.tgz
+npm install --no-save --no-package-lock ../../shieldlabs-ai-vue-1.0.0.tgz
 npm run build
 ```
+
+Adjust the tarball filename if the package version changes. To test a loader change as well,
+build and pack it in its own checkout and pass that tarball to both install commands in place of
+the published loader (include it in the example install too). Never commit a tarball or a `file:`
+dependency.
