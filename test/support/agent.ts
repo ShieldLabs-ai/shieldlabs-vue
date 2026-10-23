@@ -16,7 +16,7 @@ export const USER_HID = '5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef7
 let counter = 0;
 
 /** Deterministic UUIDv4-shaped request IDs. */
-export function nextRequestId(): string {
+export function nextIdentificationId(): string {
   counter += 1;
   return '8d7f3c2a-1b4e-4f6a-9c3d-' + counter.toString(16).padStart(12, '0');
 }
@@ -38,7 +38,7 @@ export function deferred<T>(): Deferred<T> {
 }
 
 function answer(options?: IdentifyOptions): IdentifyResult {
-  return { requestId: nextRequestId(), userId: options?.userId ?? null };
+  return { identificationId: nextIdentificationId(), userId: options?.userId ?? null };
 }
 
 /** A stand-in for the handle of `identifyOnInteraction()`. */

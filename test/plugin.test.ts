@@ -140,7 +140,7 @@ describe('createShieldLabs()', () => {
     expect(api.error.value).toBe(failure);
 
     const result = await api.identify();
-    expect(result.requestId).toMatch(/^[0-9a-f-]{36}$/);
+    expect(result.identificationId).toMatch(/^[0-9a-f-]{36}$/);
     expect(identify).toHaveBeenCalledTimes(1);
     expect(mockedLoad).toHaveBeenCalledTimes(2);
     await flushPromises();
@@ -314,7 +314,7 @@ describe('autoLoad', () => {
       setup() {
         const api = useIdentify({ runOnMount: true });
         view.api = api;
-        return () => h('p', api.result.value?.requestId ?? api.error.value?.code ?? '-');
+        return () => h('p', api.result.value?.identificationId ?? api.error.value?.code ?? '-');
       },
     });
 
@@ -488,7 +488,7 @@ describe('checkOnLoad', () => {
       setup() {
         const api = useIdentify(options);
         view.api = api;
-        return () => h('p', api.result.value?.requestId ?? api.error.value?.code ?? '-');
+        return () => h('p', api.result.value?.identificationId ?? api.error.value?.code ?? '-');
       },
     });
     return { View, view };

@@ -16,18 +16,18 @@ async function onSubmit(): Promise<void> {
   // One identification per submission. `null` when there is none: your server then treats the
   // signup as unverified.
   const result = await identify();
-  const requestId = result?.requestId ?? null;
+  const identificationId = result?.identificationId ?? null;
 
   // fetch() keeps the page alive while the agent finishes posting the identification.
   const response = await fetch('/api/signup', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email: email.value, password: password.value, requestId }),
+    body: JSON.stringify({ email: email.value, password: password.value, identificationId }),
   });
 
   message.value = response.ok
     ? 'Account created.'
-    : `Your server answered ${String(response.status)}. It would receive requestId ${requestId ?? '(none)'}.`;
+    : `Your server answered ${String(response.status)}. It would receive identificationId ${identificationId ?? '(none)'}.`;
 }
 </script>
 

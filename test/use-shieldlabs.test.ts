@@ -68,7 +68,7 @@ describe('useShieldLabs()', () => {
 
     vi.advanceTimersByTime(1000);
     pending.resolve(agent);
-    await expect(result).resolves.toEqual({ requestId: expect.any(String) as unknown, userId: USER_HID });
+    await expect(result).resolves.toEqual({ identificationId: expect.any(String) as unknown, userId: USER_HID });
     expect(identify).toHaveBeenCalledWith({ userId: USER_HID, timeout: 2000 });
 
     // Once the agent is ready, a call passes its options as they are.
@@ -221,7 +221,7 @@ describe('useShieldLabs()', () => {
         });
         submit = async () => {
           const result = await identifier?.take();
-          return result?.requestId ?? null;
+          return result?.identificationId ?? null;
         };
         return () => h('form', { ref: form }, [h('input', { name: 'email' })]);
       },

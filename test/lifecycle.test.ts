@@ -70,7 +70,7 @@ describe('mounting and unmounting', () => {
     const CheckoutStep = defineComponent({
       setup() {
         const { result } = useIdentify({ runOnMount: true });
-        return () => h('p', result.value?.requestId ?? '-');
+        return () => h('p', result.value?.identificationId ?? '-');
       },
     });
     const Cart = defineComponent({
@@ -122,9 +122,9 @@ describe('mounting and unmounting', () => {
     const call = helper.identify();
     show.value = false;
     await flushPromises();
-    answer.resolve({ requestId: '6f1c2e8a-3b5d-4c7e-8f9a-0b1c2d3e4f5a', userId: USER_HID });
-    await expect(call).resolves.toMatchObject({ requestId: '6f1c2e8a-3b5d-4c7e-8f9a-0b1c2d3e4f5a' });
-    expect(helper.result.value).toMatchObject({ requestId: '6f1c2e8a-3b5d-4c7e-8f9a-0b1c2d3e4f5a' });
+    answer.resolve({ identificationId: '6f1c2e8a-3b5d-4c7e-8f9a-0b1c2d3e4f5a', userId: USER_HID });
+    await expect(call).resolves.toMatchObject({ identificationId: '6f1c2e8a-3b5d-4c7e-8f9a-0b1c2d3e4f5a' });
+    expect(helper.result.value).toMatchObject({ identificationId: '6f1c2e8a-3b5d-4c7e-8f9a-0b1c2d3e4f5a' });
     expect(element.textContent).toBe('');
     expect(logged()).toBe('');
   });

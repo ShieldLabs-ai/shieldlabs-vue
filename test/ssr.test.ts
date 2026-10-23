@@ -23,7 +23,7 @@ const Signup = defineComponent({
       h('form', [
         h('p', status.value + (error.value ? ':' + error.value.code : '')),
         h('button', { disabled: identify.isLoading.value }, 'Sign up'),
-        h('output', identify.result.value?.requestId ?? ''),
+        h('output', identify.result.value?.identificationId ?? ''),
         h('small', identify.error.value?.code ?? ''),
       ]);
   },
