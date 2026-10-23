@@ -19,8 +19,8 @@ that contains it).
 ## How it fits
 
 1. **Browser.** `@shieldlabs-ai/vue` loads the agent and runs an identification. Your component
-   receives a `requestId`.
-2. **Your backend.** It receives the `requestId` with the protected action (signup, login,
+   receives a `identificationId`.
+2. **Your backend.** It receives the `identificationId` with the protected action (signup, login,
    checkout) and reads the verdict for it from the History API with a ShieldLabs server SDK, or
    receives it in a signed `identification.scored` webhook.
 3. **Decision.** Your backend acts on the Risk Score (bands: trusted 0-29, suspicious 30-59,
@@ -30,7 +30,7 @@ The browser only ever gets the request ID. The Risk Score, risk signals, detecti
 and device ID are read on your server.
 
 Webhooks: today each identification is delivered once, with a 1 second timeout and no retries.
-Make your webhook handler idempotent on `data.request_id`, because future retries will resend
+Make your webhook handler idempotent on `data.identification_id`, because future retries will resend
 identical bytes, and read the History API when you need a guaranteed result.
 
 ## Install
@@ -60,7 +60,7 @@ createApp(App)
   .mount('#app');
 ```
 
-Identify when the user submits a protected form, and send the `requestId` with the request:
+Identify when the user submits a protected form, and send the `identificationId` with the request:
 
 ```vue
 <script setup lang="ts">
@@ -75,7 +75,7 @@ async function onSubmit() {
   await fetch('/api/signup', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email: email.value, requestId: result?.requestId ?? null }),
+    body: JSON.stringify({ email: email.value, identificationId: result?.identificationId ?? null }),
   });
 }
 </script>
@@ -88,8 +88,8 @@ async function onSubmit() {
 </template>
 ```
 
-On your server, read the verdict for `requestId` with a ShieldLabs server SDK, for example
-`identifications.get(requestId)` in [`@shieldlabs-ai/node`](https://github.com/ShieldLabs-ai/shieldlabs-node),
+On your server, read the verdict for `identificationId` with a ShieldLabs server SDK, for example
+`identifications.get(identificationId)` in [`@shieldlabs-ai/node`](https://github.com/ShieldLabs-ai/shieldlabs-node),
 which waits until the identification has been scored. The History row appears about 1-3 seconds
 after `identify()` resolves and can be refined for up to about 10 seconds as follow-up checks
 finish. To keep that wait off the submit, start the identification when the user begins the action
@@ -116,10 +116,10 @@ A complete app is in [`examples/vite`](examples/vite).
 
 `useIdentify()` gives each component its own identify helper:
 
-- `identify(options?)` runs a fresh identification and resolves `{ requestId, userId }`, or `null`
+- `identify(options?)` runs a fresh identification and resolves `{ identificationId, userId }`, or `null`
   when there is no identification (the reason is in `error`). It never rejects, so your submit
   handler always goes on to send the protected action: test the resolved value for `null` instead
-  of catching. Your backend treats a request without `requestId` as unverified (step-up or review),
+  of catching. Your backend treats a request without `identificationId` as unverified (step-up or review),
   never as clean.
 - `result`, `isLoading` and `error` are refs for the latest call; `reset()` clears them.
 
@@ -275,7 +275,7 @@ const { identify, isLoading } = useIdentify();
 
 async function onSubmit() {
   const result = await identify();
-  await $fetch('/api/signup', { method: 'POST', body: { email: email.value, requestId: result?.requestId ?? null } });
+  await $fetch('/api/signup', { method: 'POST', body: { email: email.value, identificationId: result?.identificationId ?? null } });
 }
 </script>
 
@@ -294,16 +294,16 @@ The matching server route reads the verdict with `@shieldlabs-ai/node`:
 import { ShieldLabs, evaluateIdentification } from '@shieldlabs-ai/node';
 
 const shieldlabs = new ShieldLabs({ apiKey: process.env.SHIELDLABS_API_KEY! });
-const usedRequestIds = new Set<string>(); // use a shared store such as Redis in production
+const usedIdentificationIds = new Set<string>(); // use a shared store such as Redis in production
 
 export default defineEventHandler(async (event) => {
-  const { requestId } = await readBody<{ email: string; requestId: string | null }>(event);
-  const identification = requestId ? await shieldlabs.identifications.get(requestId) : null;
+  const { identificationId } = await readBody<{ email: string; identificationId: string | null }>(event);
+  const identification = identificationId ? await shieldlabs.identifications.get(identificationId) : null;
   const verdict = evaluateIdentification(identification, {
-    isReplay: (id) => usedRequestIds.has(id), // your store of request IDs already used
+    isReplay: (id) => usedIdentificationIds.has(id), // your store of request IDs already used
   });
   if (!verdict.ok) throw createError({ statusCode: 403, statusMessage: 'Signup refused' });
-  usedRequestIds.add(identification!.request_id);
+  usedIdentificationIds.add(identification!.identification_id);
   // Create the account.
 });
 ```
@@ -380,7 +380,7 @@ import { useShieldLabs, type InteractionIdentifier } from '@shieldlabs-ai/vue';
 import { nextTick, onBeforeUnmount, onMounted, ref } from 'vue';
 
 const form = ref<HTMLFormElement | null>(null);
-const requestId = ref('');
+const identificationId = ref('');
 const { getAgent } = useShieldLabs();
 let identifier: InteractionIdentifier | undefined;
 let unmounted = false;
@@ -391,7 +391,7 @@ onMounted(() => {
       if (!unmounted && form.value) identifier = agent.identifyOnInteraction(form.value);
     })
     .catch(() => {
-      // No agent: the form is posted without a requestId.
+      // No agent: the form is posted without a identificationId.
     });
 });
 
@@ -404,7 +404,7 @@ async function onSubmit() {
   // The identification for this submission (none while the agent has not loaded); take() re-arms
   // for the next one.
   const result = await identifier?.take().catch(() => null);
-  requestId.value = result?.requestId ?? '';
+  identificationId.value = result?.identificationId ?? '';
   await nextTick(); // the hidden field now holds the request ID
   form.value?.submit();
 }
@@ -413,7 +413,7 @@ async function onSubmit() {
 <template>
   <form ref="form" action="/signup" method="post" @submit.prevent="onSubmit">
     <input name="email" type="email" required />
-    <input type="hidden" name="requestId" :value="requestId" />
+    <input type="hidden" name="identificationId" :value="identificationId" />
     <button>Sign up</button>
   </form>
 </template>
@@ -439,7 +439,7 @@ import { ref } from 'vue';
 import SignupForm from './SignupForm.vue';
 
 it('sends the request ID with the signup', async () => {
-  const identify = vi.fn(async () => ({ requestId: '6f1c2e8a-3b5d-4c7e-8f9a-0b1c2d3e4f5a', userId: null }));
+  const identify = vi.fn(async () => ({ identificationId: '6f1c2e8a-3b5d-4c7e-8f9a-0b1c2d3e4f5a', userId: null }));
   const shieldlabs: ShieldLabsContext = {
     status: ref<ShieldLabsStatus>('ready'),
     error: ref(null),
@@ -530,7 +530,7 @@ ignored with a warning.
 | `reset()` | `void` | Clears `result`, `error` and `isLoading` |
 
 `IdentifyOptions` is `{ userId?: string; timeout?: number }` and `IdentifyResult` is
-`{ requestId: string; userId: string | null }`, as in `@shieldlabs-ai/js`. In this package `timeout`
+`{ identificationId: string; userId: string | null }`, as in `@shieldlabs-ai/js`. In this package `timeout`
 bounds the whole call: the wait for the agent to load and the agent's answer.
 
 Composables called outside `setup()` (or `app.runWithContext()`), or in the browser without the
@@ -554,7 +554,7 @@ Every identification error is a `ShieldLabsError`. Branch on `error.code`:
   does not.
 - Identifications are never retried automatically, because every identification is billed. Call
   `identify()` again on the next submission.
-- Whenever there is no identification, send the protected action anyway without a `requestId`:
+- Whenever there is no identification, send the protected action anyway without a `identificationId`:
   your backend treats a missing identification as unverified, never as clean.
 
 More detail: [`@shieldlabs-ai/js` Errors](https://github.com/ShieldLabs-ai/shieldlabs-js#errors).

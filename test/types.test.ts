@@ -20,7 +20,7 @@ import {
 
 describe('public types', () => {
   it('give the browser only the request ID and the User HID', () => {
-    expectTypeOf<IdentifyResult>().toEqualTypeOf<{ requestId: string; userId: string | null }>();
+    expectTypeOf<IdentifyResult>().toEqualTypeOf<{ identificationId: string; userId: string | null }>();
     expectTypeOf<UseIdentifyReturn['result']>().toEqualTypeOf<Readonly<Ref<IdentifyResult | null>>>();
   });
 

@@ -2,7 +2,7 @@
 
 A signup form in Vue 3. `src/main.ts` installs the plugin from `createShieldLabs()` once;
 `src/components/SignupForm.vue` calls `identify()` from `useIdentify()` on submit and sends the
-`requestId` to your backend with the signup request.
+`identificationId` to your backend with the signup request.
 
 ## Run it
 
@@ -16,7 +16,7 @@ Open the URL Vite prints (for example <http://localhost:5173>). The form posts J
 `/api/signup`. In development, Vite forwards `/api/*` to `http://localhost:3000` without the
 `/api` prefix: that is where the `node:http` example of
 [`@shieldlabs-ai/node`](https://github.com/ShieldLabs-ai/shieldlabs-node) serves `POST /signup` and
-reads the verdict for `requestId` with `identifications.get(requestId)`. Point the proxy at your
+reads the verdict for `identificationId` with `identifications.get(identificationId)`. Point the proxy at your
 own server otherwise.
 
 ShieldLabs accepts identifications only from registered domains. On `localhost` the request ID

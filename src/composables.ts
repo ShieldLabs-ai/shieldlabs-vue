@@ -60,7 +60,7 @@ interface RunningCall {
  * const { identify, isLoading } = useIdentify({ userId: () => user.value?.hid });
  * async function onSubmit() {
  *   const result = await identify();
- *   await fetch('/api/signup', { method: 'POST', body: JSON.stringify({ requestId: result?.requestId ?? null }) });
+ *   await fetch('/api/signup', { method: 'POST', body: JSON.stringify({ identificationId: result?.identificationId ?? null }) });
  * }
  */
 export function useIdentify(options: UseIdentifyOptions = {}): UseIdentifyReturn {
